@@ -18,21 +18,25 @@
 <body>
   <h1>Sprawdzanie Biletów</h1>
 
-  <input type="text" id="codeInput" placeholder="Kod biletu lub Rząd-Miejsce (np. A-12)" />
+  <!-- Wprowadzenie numerycznego kodu biletu lub numeru rzędu z miejscem -->
+  <input type="text" id="codeInput" placeholder="Kod biletu lub Rząd-Miejsce (np. A-18)" />
   <button onclick="checkIn()">Zaznacz jako obecny</button>
 
   <table>
     <thead>
       <tr>
-        <th>Kod / Miejsce</th>
+        <th>Kod Biletu</th>
+        <th>Miejsce</th>
         <th>Status</th>
       </tr>
     </thead>
     <tbody id="attendeeList">
-      <tr data-code="A-12"><td>A-12</td><td class="status">Nieobecny</td></tr>
-      <tr data-code="B-5"><td>B-5</td><td class="status">Nieobecny</td></tr>
-      <tr data-code="C-7"><td>C-7</td><td class="status">Nieobecny</td></tr>
-      <tr data-code="D-10"><td>D-10</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="7778886661" data-row="A" data-seat="18"><td>7778886661</td><td>Rząd A, Miejsce 18</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="7778886662" data-row="B" data-seat="5"><td>7778886662</td><td>Rząd B, Miejsce 5</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="7778886663" data-row="C" data-seat="7"><td>7778886663</td><td>Rząd C, Miejsce 7</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="7778886664" data-row="D" data-seat="10"><td>7778886664</td><td>Rząd D, Miejsce 10</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="7778886665" data-row="A" data-seat="13"><td>7778886665</td><td>Rząd A, Miejsce 13</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="7778886666" data-row="B" data-seat="6"><td>7778886666</td><td>Rząd B, Miejsce 6</td><td class="status">Nieobecny</td></tr>
     </tbody>
   </table>
 
@@ -71,16 +75,35 @@
 
     function checkIn() {
       const input = document.getElementById('codeInput').value.trim().toUpperCase();
-      const row = document.querySelector(`#attendeeList tr[data-code='${input}']`);
+      let matched = false;
 
+      // Sprawdzenie kodu biletu
+      const row = document.querySelector(`#attendeeList tr[data-code='${input}']`);
       if (row) {
         if (!row.classList.contains('checked')) {
           firebase.database().ref("attendees/" + input).set(true);
+          matched = true;
         } else {
           alert('To miejsce zostało już oznaczone jako obecne.');
         }
-      } else {
-        alert('Nie znaleziono takiego biletu / miejsca.');
+      }
+
+      // Sprawdzenie numeru rzędu i miejsca (np. A-18)
+      if (!matched) {
+        const [rowLetter, seatNumber] = input.split('-');
+        const rowsInSameRow = document.querySelectorAll(`#attendeeList tr[data-row='${rowLetter.toUpperCase()}'][data-seat='${seatNumber}']`);
+        if (rowsInSameRow.length > 0) {
+          rowsInSameRow.forEach(row => {
+            if (!row.classList.contains('checked')) {
+              firebase.database().ref("attendees/" + row.dataset.code).set(true);
+            }
+          });
+          matched = true;
+        }
+      }
+
+      if (!matched) {
+        alert('Nie znaleziono takiego biletu lub miejsca.');
       }
 
       document.getElementById('codeInput').value = '';
