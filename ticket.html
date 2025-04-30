@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sprawdzanie Biletów</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
+    h1 { text-align: center; }
+    input, button { padding: 10px; margin: 5px 0; width: 100%; font-size: 1em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    tr.checked { background-color: #c8e6c9; }
+  </style>
+</head>
+<body>
+  <h1>Sprawdzanie Biletów</h1>
+
+  <input type="text" id="codeInput" placeholder="Kod biletu lub Rząd-Miejsce (np. A-12)" />
+  <button onclick="checkIn()">Zaznacz jako obecny</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Kod / Miejsce</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="attendeeList">
+      <tr data-code="A-12"><td>A-12</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="B-5"><td>B-5</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="C-7"><td>C-7</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="D-10"><td>D-10</td><td class="status">Nieobecny</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0H-yDGiUmr_dEW9SF6u4CvFsK_K627zw",
+      authDomain: "aplikacja-bilety.firebaseapp.com",
+      databaseURL: "https://aplikacja-bilety-default-rtdb.firebaseio.com/",
+      projectId: "aplikacja-bilety",
+      storageBucket: "aplikacja-bilety.firebasestorage.app",
+      messagingSenderId: "230436720725",
+      appId: "1:230436720725:web:324a39f8b2a0c7104244dc"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const attendeeList = document.getElementById('attendeeList');
+
+    // Synchronizuj status obecności z Firebase
+    firebase.database().ref("attendees").on("value", snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+      document.querySelectorAll('#attendeeList tr').forEach(row => {
+        const code = row.dataset.code;
+        const statusCell = row.querySelector('.status');
+        if (data[code]) {
+          row.classList.add('checked');
+          statusCell.textContent = 'Obecny';
+        } else {
+          row.classList.remove('checked');
+          statusCell.textContent = 'Nieobecny';
+        }
+      });
+    });
+
+    function checkIn() {
+      const input = document.getElementById('codeInput').value.trim().toUpperCase();
+      const row = document.querySelector(`#attendeeList tr[data-code='${input}']`);
+
+      if (row) {
+        if (!row.classList.contains('checked')) {
+          firebase.database().ref("attendees/" + input).set(true);
+        } else {
+          alert('To miejsce zostało już oznaczone jako obecne.');
+        }
+      } else {
+        alert('Nie znaleziono takiego biletu / miejsca.');
+      }
+
+      document.getElementById('codeInput').value = '';
+    }
+  </script>
+</body>
+</html>
