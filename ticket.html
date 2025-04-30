@@ -7,21 +7,157 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
-    h1 { text-align: center; }
-    input, button { padding: 10px; margin: 5px 0; width: 100%; font-size: 1em; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    tr.checked { background-color: #c8e6c9; }
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+      margin: 0;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  
+    h1, h2 {
+      text-align: center;
+    }
+  
+    .input-section {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+  
+    input, button {
+      padding: 12px;
+      font-size: 1em;
+      flex: 1 1 300px;
+      box-sizing: border-box;
+    }
+  
+    button {
+      max-width: 200px;
+      cursor: pointer;
+    }
+  
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+  
+    tr.checked {
+      background-color: #c8e6c9;
+    }
+  
+    /* Mobile: max 600px */
+    @media (max-width: 600px) {
+      .input-section {
+        flex-direction: column;
+      }
+  
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+  
+      thead {
+        display: none;
+      }
+  
+      tr {
+        margin-bottom: 10px;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+  
+      td {
+        padding: 10px;
+        text-align: left;
+        position: relative;
+      }
+  
+      td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+        color: #444;
+      }
+    }
+  
+    /* Tablet: 601px–1024px */
+    @media (min-width: 601px) and (max-width: 1024px) {
+      input, button {
+        font-size: 1.1em;
+      }
+  
+      th, td {
+        font-size: 1em;
+        padding: 12px;
+      }
+    }
+  
+    /* Desktop: min 1025px */
+    @media (min-width: 1025px) {
+      input, button {
+        font-size: 1.1em;
+      }
+  
+      th, td {
+        font-size: 1em;
+        padding: 14px;
+      }
+  
+      table {
+        font-size: 1rem;
+      }
+    }
   </style>
+  
 </head>
 <body>
   <h1>Sprawdzanie Biletów</h1>
 
-  <!-- Wprowadzenie numerycznego kodu biletu lub numeru rzędu z miejscem -->
-  <input type="text" id="codeInput" placeholder="Kod biletu lub Rząd-Miejsce (np. A-18)" />
-  <button onclick="checkIn()">Zaznacz jako obecny</button>
+  <div class="input-section">
+    <input type="text" id="codeInput" placeholder="Kod biletu lub Rząd-Miejsce (np. A-18)" />
+    <button onclick="checkIn()">Zaznacz jako obecny</button>
+  </div>
 
+  <h2>Bilety VIP</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Kod Biletu</th>
+        <th>Miejsce</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="vipList">
+      <tr data-code="VIP-999000111" data-row="V" data-seat="1">
+        <td data-label="Kod Biletu">VIP-999000111</td>
+        <td data-label="Miejsce">Rząd V, Miejsce 1</td>
+        <td class="status" data-label="Status">Nieobecny</td>
+      </tr>
+      <tr data-code="VIP-999000222" data-row="V" data-seat="2">
+        <td data-label="Kod Biletu">VIP-999000222</td>
+        <td data-label="Miejsce">Rząd V, Miejsce 2</td>
+        <td class="status" data-label="Status">Nieobecny</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Bilety Standardowe</h2>
   <table>
     <thead>
       <tr>
@@ -31,12 +167,36 @@
       </tr>
     </thead>
     <tbody id="attendeeList">
-      <tr data-code="7778886661" data-row="A" data-seat="18"><td>7778886661</td><td>Rząd A, Miejsce 18</td><td class="status">Nieobecny</td></tr>
-      <tr data-code="7778886662" data-row="B" data-seat="5"><td>7778886662</td><td>Rząd B, Miejsce 5</td><td class="status">Nieobecny</td></tr>
-      <tr data-code="7778886663" data-row="C" data-seat="7"><td>7778886663</td><td>Rząd C, Miejsce 7</td><td class="status">Nieobecny</td></tr>
-      <tr data-code="7778886664" data-row="D" data-seat="10"><td>7778886664</td><td>Rząd D, Miejsce 10</td><td class="status">Nieobecny</td></tr>
-      <tr data-code="7778886665" data-row="A" data-seat="13"><td>7778886665</td><td>Rząd A, Miejsce 13</td><td class="status">Nieobecny</td></tr>
-      <tr data-code="7778886666" data-row="B" data-seat="6"><td>7778886666</td><td>Rząd B, Miejsce 6</td><td class="status">Nieobecny</td></tr>
+      <tr data-code="7778886661" data-row="A" data-seat="18">
+        <td data-label="Kod Biletu">7778886661</td>
+        <td data-label="Miejsce">Rząd A, Miejsce 18</td>
+        <td class="status" data-label="Status">Nieobecny</td>
+      </tr>
+      <tr data-code="7778886662" data-row="B" data-seat="5">
+        <td data-label="Kod Biletu">7778886662</td>
+        <td data-label="Miejsce">Rząd B, Miejsce 5</td>
+        <td class="status" data-label="Status">Nieobecny</td>
+      </tr>
+      <tr data-code="7778886663" data-row="C" data-seat="7">
+        <td data-label="Kod Biletu">7778886663</td>
+        <td data-label="Miejsce">Rząd C, Miejsce 7</td>
+        <td class="status" data-label="Status">Nieobecny</td>
+      </tr>
+      <tr data-code="7778886664" data-row="D" data-seat="10">
+        <td data-label="Kod Biletu">7778886664</td>
+        <td data-label="Miejsce">Rząd D, Miejsce 10</td>
+        <td class="status" data-label="Status">Nieobecny</td>
+      </tr>
+      <tr data-code="7778886665" data-row="A" data-seat="13">
+        <td data-label="Kod Biletu">7778886665</td>
+        <td data-label="Miejsce">Rząd A, Miejsce 13</td>
+        <td class="status" data-label="Status">Nieobecny</td>
+      </tr>
+      <tr data-code="7778886666" data-row="B" data-seat="6">
+        <td data-label="Kod Biletu">7778886666</td>
+        <td data-label="Miejsce">Rząd B, Miejsce 6</td>
+        <td class="status" data-label="Status">Nieobecny</td>
+      </tr>
     </tbody>
   </table>
 
@@ -54,52 +214,54 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const attendeeList = document.getElementById('attendeeList');
-
-    // Synchronizuj status obecności z Firebase
-    firebase.database().ref("attendees").on("value", snapshot => {
-      const data = snapshot.val();
-      if (!data) return;
-      document.querySelectorAll('#attendeeList tr').forEach(row => {
-        const code = row.dataset.code;
-        const statusCell = row.querySelector('.status');
-        if (data[code]) {
-          row.classList.add('checked');
-          statusCell.textContent = 'Obecny';
-        } else {
-          row.classList.remove('checked');
-          statusCell.textContent = 'Nieobecny';
-        }
+    function updatePresenceFromFirebase() {
+      firebase.database().ref("attendees").on("value", snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+        document.querySelectorAll('tbody tr').forEach(row => {
+          const code = row.dataset.code;
+          const statusCell = row.querySelector('.status');
+          if (data[code]) {
+            row.classList.add('checked');
+            statusCell.textContent = 'Obecny';
+          } else {
+            row.classList.remove('checked');
+            statusCell.textContent = 'Nieobecny';
+          }
+        });
       });
-    });
+    }
 
     function checkIn() {
       const input = document.getElementById('codeInput').value.trim().toUpperCase();
       let matched = false;
+      const allRows = document.querySelectorAll('tbody tr');
 
-      // Sprawdzenie kodu biletu
-      const row = document.querySelector(`#attendeeList tr[data-code='${input}']`);
-      if (row) {
-        if (!row.classList.contains('checked')) {
-          firebase.database().ref("attendees/" + input).set(true);
-          matched = true;
-        } else {
-          alert('To miejsce zostało już oznaczone jako obecne.');
+      allRows.forEach(row => {
+        if (row.dataset.code === input) {
+          if (!row.classList.contains('checked')) {
+            firebase.database().ref("attendees/" + row.dataset.code).set(true);
+            matched = true;
+          } else {
+            alert('To miejsce zostało już oznaczone jako obecne.');
+            matched = true;
+          }
         }
-      }
+      });
 
-      // Sprawdzenie numeru rzędu i miejsca (np. A-18)
-      if (!matched) {
+      if (!matched && input.includes('-')) {
         const [rowLetter, seatNumber] = input.split('-');
-        const rowsInSameRow = document.querySelectorAll(`#attendeeList tr[data-row='${rowLetter.toUpperCase()}'][data-seat='${seatNumber}']`);
-        if (rowsInSameRow.length > 0) {
-          rowsInSameRow.forEach(row => {
+        allRows.forEach(row => {
+          if (row.dataset.row === rowLetter.toUpperCase() && row.dataset.seat === seatNumber) {
             if (!row.classList.contains('checked')) {
               firebase.database().ref("attendees/" + row.dataset.code).set(true);
+              matched = true;
+            } else {
+              alert('To miejsce zostało już oznaczone jako obecne.');
+              matched = true;
             }
-          });
-          matched = true;
-        }
+          }
+        });
       }
 
       if (!matched) {
@@ -108,6 +270,8 @@
 
       document.getElementById('codeInput').value = '';
     }
+
+    updatePresenceFromFirebase();
   </script>
 </body>
 </html>
